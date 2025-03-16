@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>《量子力学》课堂随机点名系统</title>
+    <style>
+        body {
+            text-align: center;
+            padding: 50px;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f0f3f5;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+        #display {
+            font-size: 64px;
+            margin: 40px 0;
+            color: #e67e22;
+            min-height: 80px;
+            letter-spacing: 3px;
+        }
+        button {
+            padding: 20px 50px;
+            font-size: 28px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #result {
+            font-size: 36px;
+            color: #27ae60;
+            margin-top: 30px;
+            font-weight: bold;
+        }
+        .container {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>《量子力学》课堂随机点名系统</h1>
+        <div id="display">🎉 准备就绪</div>
+        <button onclick="startRandom()" id="startBtn">开始点名</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const students = [
+            "何嘉睿", "尤梦媛", "陈雨馨", "吴秋雁", "李冰冰", "杨晓莹",
+            "陈佳楠", "郑博文", "翁童", "王永恒", "贾申冬", "赵瑞泽",
+            "何国庆", "刘德鑫", "顾子杰", "谢宇航", "陈烁琦", "孙国豪",
+            "沈胡迪", "高清宇", "王心睿", "王安昱", "邢本鸿飞", "包伟敬",
+            "李小颖", "邹子萱", "陈远近", "骆家叶", "徐世杰", "岑孟阳",
+            "张丁", "王传尚", "蓝周祥", "施如昊", "原田宇", "孙国康",
+            "鲁丙瑶", "李煌彬", "付梓玮", "杜华军", "李俊霖", "江滨",
+            "王沧海", "张发政", "叶雨轩", "黄灿", "李鑫应", "李梦冬",
+            "李浩博", "韦启龙", "李杰阳", "吴雷达", "李俊成", "范延鹏"
+        ];
+
+        let isRunning = false;
+        let intervalId;
+        let timeoutId;
+
+        function startRandom() {
+            if (isRunning) return;
+
+            // 重置状态
+            isRunning = true;
+            const btn = document.getElementById("startBtn");
+            btn.innerHTML = "随机中...";
+            btn.disabled = true;
+            document.getElementById("result").innerHTML = "";
+            
+            // 快速随机效果
+            let counter = 0;
+            intervalId = setInterval(() => {
+                const index = Math.floor(Math.random() * students.length);
+                document.getElementById("display").innerHTML = students[index];
+                counter++;
+            }, 80);
+
+            // 5秒后停止
+            timeoutId = setTimeout(() => {
+                clearInterval(intervalId);
+                const selected = document.getElementById("display").innerHTML;
+                document.getElementById("result").innerHTML = `🎉 有请 ${selected} 同学上来做题！`;
+                btn.innerHTML = "再次点名";
+                btn.disabled = false;
+                isRunning = false;
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
