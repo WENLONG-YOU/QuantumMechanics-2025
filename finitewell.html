@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>有限深方势阱束缚态求解</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+    <h2>有限深方势阱束缚态求解</h2>
+    
+    <label for="V0">势阱深度 V0：</label>
+    <input type="number" id="V0" value="10" step="0.1">
+
+    <label for="a">势阱宽度 a：</label>
+    <input type="number" id="a" value="2" step="0.1">
+
+    <button id="computeButton">计算</button>
+
+    <h3>束缚态能级 (E)：</h3>
+    <ul id="energyLevels"></ul>
+
+    <div id="plot" style="width: 800px; height: 500px;"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("computeButton").addEventListener("click", solveSchrodinger);
+        });
+
+        function f(E, V0, a) {
+            if (E >= V0) return [NaN, NaN]; 
+            
+            let k = Math.sqrt(2 * E);
+            let kappa = Math.sqrt(2 * (V0 - E));
+
+            let lhs1 = k * Math.tan(k * a / 2);
+            let lhs2 = -k * (1 / Math.tan(k * a / 2));
+
+            return [lhs1 - kappa, lhs2 + kappa];
+        }
+
+        function findRoots(V0, a) {
+            let roots = [];
+            let dE = 0.01;
+            let last_sign1 = null, last_sign2 = null;
+            let E_min = 0, E_max = V0 - dE;
+
+            for (let E = E_min + dE; E < E_max; E += dE) {
+                let [y1, y2] = f(E, V0, a);
+                if (isNaN(y1) || isNaN(y2)) continue;
+
+                let sign1 = Math.sign(y1);
+                let sign2 = Math.sign(y2);
+
+                if (last_sign1 !== null && sign1 !== last_sign1) {
+                    roots.push(binarySolve(E - dE, E, V0, a, "even"));
+                }
+                if (last_sign2 !== null && sign2 !== last_sign2) {
+                    roots.push(binarySolve(E - dE, E, V0, a, "odd"));
+                }
+
+                last_sign1 = sign1;
+                last_sign2 = sign2;
+            }
+            return roots;
+        }
+
+        function binarySolve(E1, E2, V0, a, type) {
+            let tol = 1e-6;
+            while (Math.abs(E1 - E2) > tol) {
+                let Emid = (E1 + E2) / 2;
+                let [y1, y2] = f(Emid, V0, a);
+                let y = (type === "even") ? y1 : y2;
+
+                if (y > 0) {
+                    E2 = Emid;
+                } else {
+                    E1 = Emid;
+                }
+            }
+            return (E1 + E2) / 2;
+        }
+
+        function waveFunction(x, E, a, type) {
+            let k = Math.sqrt(2 * E);
+            let psi = type === "even" ? Math.cos(k * x) : Math.sin(k * x);
+            return psi * 0.4; // 归一化缩放，使波函数清晰可见
+        }
+
+        function plotPotential(V0, a, energyLevels) {
+            let x = [], V = [];
+            for (let i = -3 * a; i <= 3 * a; i += 0.1) {
+                x.push(i);
+                V.push((Math.abs(i) <= a / 2) ? 0 : V0);
+            }
+
+            let potentialTrace = {
+                x: x,
+                y: V,
+                mode: 'lines',
+                name: 'V(x)',
+                line: {color: 'blue'}
+            };
+
+            let energyTraces = energyLevels.map(E => ({
+                x: [-a / 2, a / 2],
+                y: [E, E],
+                mode: 'lines',
+                name: `E = ${E.toFixed(4)}`,
+                line: {color: 'red', dash: 'dash'}
+            }));
+
+            let waveTraces = energyLevels.map((E, index) => {
+                let x_vals = [], psi_vals = [];
+                for (let x = -a / 2; x <= a / 2; x += 0.05) {
+                    x_vals.push(x);
+                    psi_vals.push(E + waveFunction(x, E, a, index % 2 === 0 ? "even" : "odd"));
+                }
+                return {
+                    x: x_vals,
+                    y: psi_vals,
+                    mode: 'lines',
+                    name: `ψ_${index + 1}(x)`,
+                    line: {color: 'green'}
+                };
+            });
+
+            let layout = {
+                title: "有限深方势阱与束缚态波函数",
+                xaxis: {title: "x"},
+                yaxis: {title: "V(x) 和 ψ_n(x)", range: [-1, V0 + 1]},
+            };
+
+            Plotly.newPlot('plot', [potentialTrace, ...energyTraces, ...waveTraces], layout);
+        }
+
+        function solveSchrodinger() {
+            let V0 = parseFloat(document.getElementById("V0").value);
+            let a = parseFloat(document.getElementById("a").value);
+
+            let energyLevels = findRoots(V0, a);
+            
+            let energyList = document.getElementById("energyLevels");
+            energyList.innerHTML = "";
+            energyLevels.forEach(E => {
+                let li = document.createElement("li");
+                li.textContent = `E = ${E.toFixed(4)}`;
+                energyList.appendChild(li);
+            });
+
+            plotPotential(V0, a, energyLevels);
+        }
+
+    </script>
+
+</body>
+</html>
