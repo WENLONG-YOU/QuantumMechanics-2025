@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子势阱对比：有限深与无限深</title>
+    <!-- MathJax 用于显示公式 -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            startup: { typeset: true }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .slider-group { text-align: center; }
+        input[type=range] { width: 200px; cursor: pointer; }
+        .val-display { font-weight: bold; color: #2c3e50; margin-top: 5px; display: block; font-family: monospace; font-size: 1.1em; }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background: #fff;
+            display: block;
+            margin-top: 10px;
+        }
+        .formula { margin: 10px 0; font-size: 1.1em; color: #444; min-height: 1.5em;}
+        .unit-label {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>量子势阱对比演示</h1>
+
+    <div class="controls">
+        <div class="slider-group">
+            <label>势阱深度 $V_0$</label><br>
+            <input type="range" id="v0Slider" min="0.1" max="60" step="0.1" value="15">
+            <span id="v0Val" class="val-display">15.0</span>
+        </div>
+        <div class="slider-group">
+            <label>阱宽 $a$</label><br>
+            <input type="range" id="aSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+            <span id="aVal" class="val-display">1.0</span>
+        </div>
+        <!-- 波函数振幅调节 -->
+        <div class="slider-group">
+            <label>波函数振幅</label><br>
+            <input type="range" id="ampSlider" min="0" max="3" step="0.1" value="1.2">
+            <span id="ampVal" class="val-display">1.2</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧：有限深 -->
+        <div class="panel">
+            <h2>有限深方势阱</h2>
+            <div class="formula">
+                $$ V(x) = \begin{cases} -V_0, & |x| < a/2 \\ 0, & |x| \ge a/2 \end{cases} $$
+            </div>
+            <canvas id="finiteCanvas" width="450" height="400"></canvas>
+            <div class="unit-label">能量单位: $\frac{\hbar^2 \pi^2}{2ma^2}$</div>
+        </div>
+
+        <!-- 右侧：无限深 -->
+        <div class="panel">
+            <h2>无限深方势阱</h2>
+            <div class="formula">
+                $$ E_n = -V_0 + \frac{n^2 \hbar^2 \pi^2}{2ma^2} $$
+            </div>
+            <canvas id="infiniteCanvas" width="450" height="400"></canvas>
+            <div class="unit-label">能量单位: $\frac{\hbar^2 \pi^2}{2ma^2}$</div>
+        </div>
+    </div>
+
+    <script>
+        const v0Slider = document.getElementById('v0Slider');
+        const aSlider = document.getElementById('aSlider');
+        const ampSlider = document.getElementById('ampSlider');
+        const v0Val = document.getElementById('v0Val');
+        const aVal = document.getElementById('aVal');
+        const ampVal = document.getElementById('ampVal');
+        
+        const canvasF = document.getElementById('finiteCanvas');
+        const ctxF = canvasF.getContext('2d');
+        const canvasI = document.getElementById('infiniteCanvas');
+        const ctxI = canvasI.getContext('2d');
+
+        const W = 450, H = 400;
+        const pad = 50; 
+
+        // 坐标变换
+        function mapX(x, min, max) { return pad + (x - min) / (max - min) * (W - 2 * pad); }
+        function mapY(y, min, max) { return H - pad - (y - min) / (max - min) * (H - 2 * pad); }
+
+        // --- 辅助函数：生成带下标的标签 ---
+        // 将数字转换为 Unicode 下标，例如 1 -> ₁
+        function getSubscript(n) {
+            const subs = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+            return n.toString().split('').map(digit => subs[digit]).join('');
+        }
+
+        // --- 核心物理计算：有限深势阱 ---
+        function solveFiniteWell(V0, a) {
+            const states = [];
+            const m = 1.0, hbar = 1.0;
+            const L = a / 2; 
+            
+            const steps = 5000;
+            const dE = V0 / steps;
+            
+            let prevEvenVal = 0;
+            let prevOddVal = 0;
+            let firstRun = true;
+
+            for (let i = 1; i < steps; i++) {
+                const E = -V0 + i * dE;
+                if (E >= 0) break;
+
+                const k = Math.sqrt(2 * m * (E + V0)) / hbar;
+                const kappa = Math.sqrt(-2 * m * E) / hbar;
+                
+                // 偶宇称: k * tan(kL) = kappa
+                const tanVal = Math.tan(k * L);
+                const evenVal = (Math.abs(tanVal) > 100) ? 0 : (k * tanVal - kappa);
+                
+                // 奇宇称: k * cot(kL) = -kappa
+                const cotVal = 1 / Math.tan(k * L);
+                const oddVal = (Math.abs(cotVal) > 100) ? 0 : (k * cotVal + kappa);
+
+                if (!firstRun) {
+                    // 检查偶宇称过零
+                    if (prevEvenVal * evenVal < 0) {
+                        const E_root = E - dE * evenVal / (evenVal - prevEvenVal);
+                        const k_root = Math.sqrt(2 * m * (E_root + V0)) / hbar;
+                        const kappa_root = Math.sqrt(-2 * m * E_root) / hbar;
+                        states.push({E: E_root, type: 'even', k: k_root, kappa: kappa_root});
+                    }
+                    // 检查奇宇称过零
+                    if (prevOddVal * oddVal < 0) {
+                        const E_root = E - dE * oddVal / (oddVal - prevOddVal);
+                        const k_root = Math.sqrt(2 * m * (E_root + V0)) / hbar;
+                        const kappa_root = Math.sqrt(-2 * m * E_root) / hbar;
+                        states.push({E: E_root, type: 'odd', k: k_root, kappa: kappa_root});
+                    }
+                }
+
+                prevEvenVal = evenVal;
+                prevOddVal = oddVal;
+                firstRun = false;
+            }
+            
+            return states.sort((a, b) => a.E - b.E);
+        }
+
+        function draw() {
+            const V0 = parseFloat(v0Slider.value);
+            const a = parseFloat(aSlider.value);
+            const waveAmp = parseFloat(ampSlider.value);
+            
+            v0Val.innerText = V0.toFixed(1);
+            aVal.innerText = a.toFixed(1);
+            ampVal.innerText = waveAmp.toFixed(1);
+
+            // 绘图范围
+            const xMin = -1.5 * a;
+            const xMax = 1.5 * a;
+            const yMin = -V0 - 2; 
+            const yMax = 2; 
+
+            // --- 1. 绘制左侧：有限深势阱 ---
+            ctxF.clearRect(0, 0, W, H);
+            
+            // 坐标轴
+            ctxF.strokeStyle = '#aaa'; ctxF.lineWidth = 1;
+            ctxF.beginPath();
+            ctxF.moveTo(mapX(0, xMin, xMax), mapY(yMin, yMin, yMax)); // Y
+            ctxF.moveTo(mapX(xMin, xMin, xMax), mapY(0, yMin, yMax)); // X
+            ctxF.stroke();
+
+            // 势阱形状
+            ctxF.strokeStyle = '#000'; ctxF.lineWidth = 3;
+            ctxF.beginPath();
+            ctxF.moveTo(mapX(xMin, xMin, xMax), mapY(0, yMin, yMax));
+            ctxF.lineTo(mapX(-a/2, xMin, xMax), mapY(0, yMin, yMax));
+            ctxF.lineTo(mapX(-a/2, xMin, xMax), mapY(-V0, yMin, yMax));
+            ctxF.lineTo(mapX(a/2, xMin, xMax), mapY(-V0, yMin, yMax));
+            ctxF.lineTo(mapX(a/2, xMin, xMax), mapY(0, yMin, yMax));
+            ctxF.lineTo(mapX(xMax, xMin, xMax), mapY(0, yMin, yMax));
+            ctxF.stroke();
+
+            // 计算并绘制能级
+            const states = solveFiniteWell(V0, a);
+
+            states.forEach((s, i) => {
+                // 根据奇偶性决定颜色
+                const isEven = (s.type === 'even');
+                const color = isEven ? '#e74c3c' : '#3498db'; // 偶红奇蓝
+                
+                // 1. 绘制能级线
+                ctxF.strokeStyle = color;
+                ctxF.lineWidth = 2;
+                ctxF.setLineDash([5, 3]);
+                ctxF.beginPath();
+                ctxF.moveTo(mapX(-a/2, xMin, xMax), mapY(s.E, yMin, yMax));
+                ctxF.lineTo(mapX(a/2, xMin, xMax), mapY(s.E, yMin, yMax));
+                ctxF.stroke();
+                ctxF.setLineDash([]);
+
+                // 2. 绘制波函数
+                ctxF.strokeStyle = color;
+                ctxF.lineWidth = 2;
+                ctxF.beginPath();
+
+                for (let x = xMin; x <= xMax; x += 0.02) {
+                    let psi = 0;
+                    if (Math.abs(x) <= a/2) {
+                        psi = isEven ? Math.cos(s.k * x) : Math.sin(s.k * x);
+                    } else {
+                        const boundaryVal = isEven ? Math.cos(s.k * a/2) : Math.sin(s.k * a/2);
+                        const decay = Math.exp(-s.kappa * (Math.abs(x) - a/2));
+                        psi = boundaryVal * decay;
+                    }
+                    
+                    // 使用滑块控制的振幅
+                    const yVal = s.E + psi * waveAmp;
+                    const cx = mapX(x, xMin, xMax);
+                    const cy = mapY(yVal, yMin, yMax);
+                    
+                    if (x === xMin) ctxF.moveTo(cx, cy);
+                    else ctxF.lineTo(cx, cy);
+                }
+                ctxF.stroke();
+
+                // 3. 标签 (使用 Unicode 下标)
+                ctxF.fillStyle = color;
+                ctxF.font = 'bold 14px "Segoe UI", sans-serif'; // 增大字体以清晰显示下标
+                // 生成 E₁ = -12.34 格式
+                const label = `E${getSubscript(i+1)} = ${s.E.toFixed(2)}`;
+                
+                // 标签位置稍微向右偏移
+                ctxF.fillText(label, mapX(a/2 + 0.05*a, xMin, xMax), mapY(s.E, yMin, yMax));
+            });
+
+            // --- 2. 绘制右侧：无限深势阱 ---
+            ctxI.clearRect(0, 0, W, H);
+
+            // 坐标轴
+            ctxI.strokeStyle = '#aaa'; ctxI.lineWidth = 1;
+            ctxI.beginPath();
+            ctxI.moveTo(mapX(0, xMin, xMax), mapY(yMin, yMin, yMax));
+            ctxI.moveTo(mapX(xMin, xMin, xMax), mapY(0, yMin, yMax));
+            ctxI.stroke();
+
+            // 势阱形状
+            ctxI.strokeStyle = '#000'; 
+            ctxI.lineWidth = 3;
+            ctxI.beginPath();
+            
+            // 1. 底部实线 (-V0)
+            ctxI.moveTo(mapX(-a/2, xMin, xMax), mapY(-V0, yMin, yMax));
+            ctxI.lineTo(mapX(a/2, xMin, xMax), mapY(-V0, yMin, yMax));
+            
+            // 2. 两侧垂直墙壁 (向上画)
+            ctxI.moveTo(mapX(-a/2, xMin, xMax), mapY(-V0, yMin, yMax));
+            ctxI.lineTo(mapX(-a/2, xMin, xMax), mapY(yMax, yMin, yMax));
+            
+            ctxI.moveTo(mapX(a/2, xMin, xMax), mapY(-V0, yMin, yMax));
+            ctxI.lineTo(mapX(a/2, xMin, xMax), mapY(yMax, yMin, yMax));
+            
+            ctxI.stroke();
+
+            // 3. 顶部 V=0 处的虚线
+            ctxI.strokeStyle = '#000';
+            ctxI.lineWidth = 2;
+            ctxI.setLineDash([5, 5]);
+            ctxI.beginPath();
+            ctxI.moveTo(mapX(-a/2, xMin, xMax), mapY(0, yMin, yMax));
+            ctxI.lineTo(mapX(a/2, xMin, xMax), mapY(0, yMin, yMax));
+            ctxI.stroke();
+            ctxI.setLineDash([]);
+
+            // 计算无限深势阱能级
+            const E_unit = 1.0 / (a * a);
+
+            for (let n = 1; n <= 8; n++) {
+                const E_n = -V0 + n * n * E_unit;
+                if (E_n > yMax) break;
+
+                // 配色逻辑：n=1(奇)->红, n=2(偶)->蓝...
+                const color = (n % 2 !== 0) ? '#e74c3c' : '#3498db';
+
+                // 1. 绘制能级线
+                ctxI.strokeStyle = color;
+                ctxI.lineWidth = 2;
+                ctxI.setLineDash([5, 3]);
+                ctxI.beginPath();
+                ctxI.moveTo(mapX(-a/2, xMin, xMax), mapY(E_n, yMin, yMax));
+                ctxI.lineTo(mapX(a/2, xMin, xMax), mapY(E_n, yMin, yMax));
+                ctxI.stroke();
+                ctxI.setLineDash([]);
+
+                // 2. 绘制波函数
+                ctxI.strokeStyle = color;
+                ctxI.lineWidth = 2;
+                ctxI.beginPath();
+
+                for (let x = -a/2; x <= a/2; x += 0.02) {
+                    const xi = (x + a/2) / a;
+                    const psi = Math.sin(n * Math.PI * xi);
+                    
+                    const yVal = E_n + psi * waveAmp; // 使用统一振幅
+                    const cx = mapX(x, xMin, xMax);
+                    const cy = mapY(yVal, yMin, yMax);
+                    
+                    if (x === -a/2) ctxI.moveTo(cx, cy);
+                    else ctxI.lineTo(cx, cy);
+                }
+                ctxI.stroke();
+
+                // 3. 标签 (使用 Unicode 下标)
+                ctxI.fillStyle = color;
+                ctxI.font = 'bold 14px "Segoe UI", sans-serif';
+                const label = `n${getSubscript(n)}`; // 显示为 n₁, n₂...
+                ctxI.fillText(label, mapX(a/2 + 0.05*a, xMin, xMax), mapY(E_n, yMin, yMax));
+            }
+        }
+
+        v0Slider.addEventListener('input', draw);
+        aSlider.addEventListener('input', draw);
+        ampSlider.addEventListener('input', draw);
+
+        draw();
+    </script>
+</body>
+</html>
+
+
