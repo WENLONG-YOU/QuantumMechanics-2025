@@ -16,7 +16,7 @@
     *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/1Dfinitewell.html)
 *   **🚧 一维势垒的隧穿 (Potential Barrier Tunneling)**
     *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/1Dpotentialbarrier.html)
-*   *   **🎵 一维量子谐振子 (1D Harmonic Oscillator)**
+*  **🎵 一维量子谐振子 (1D Harmonic Oscillator)**
     *   [点击进入演示](1Dharmonicoscillator.html)
 
 > **💡 提示 (Tip):** 
