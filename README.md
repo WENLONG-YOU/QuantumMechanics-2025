@@ -1,4 +1,4 @@
-# 🚀 量子力学课程演示 (Quantum Mechanics Course Demonstrations)
+# 🚀量子力学课程演示  ( NUAA 2026 )
 
 这是一个用于辅助《量子力学》教学的交互式可视化工具库。
 
