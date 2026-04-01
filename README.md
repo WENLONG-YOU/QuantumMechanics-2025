@@ -1,29 +1,22 @@
-Quantum Mechanics Course Demonstrations
+# 🚀 量子力学课程演示 (Quantum Mechanics Course Demonstrations)
 
-Interactive Visualizations for Junior-level Quantum Mechanics in NUAA
+这是一个用于辅助《量子力学》教学的交互式可视化工具库。
 
-This repository contains interactive demonstration pages developed to assist in the teaching and understanding of core concepts in Quantum Mechanics. These tools are designed for junior undergraduate students to provide intuitive insights into wave mechanics and quantum phenomena.
-🚀 Featured Demonstration: 1D Potential Barrier
+---
 
-The primary module in this repository focuses on the One-Dimensional Potential Barrier problem, a fundamental topic in quantum tunneling and scattering theory.
-Key Features:
+### 🔗 核心演示模块 (Core Demonstrations)
 
-    Wave Function Visualization: Real-time rendering of the spatial wave function ψ(x), including real and imaginary parts.
+以下是本仓库包含的主要演示页面：
 
-    Probability Density: Dynamic plotting of $$∣ψ(x)∣^2$$ to visualize particle distribution and tunneling probability.
+*   **📝 课堂随机点名系统**
+    *   [点击进入点名页面](https://wenlong-you.github.io/QuantumMechanics/dianming.html)
+*   **🪜 一维无穷深势阱 (Infinite Square Well)**
+    *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/1DInfinitewell.html)
+*   **🕳️ 一维有限深势阱 (Finite Square Well)**
+    *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/1Dfinitewell.html)
+    *   *(注：根据你的描述，该链接文件名为 `1Dfinitewell.html`，请确保仓库中文件名拼写一致)*
+*   **🚧 一维势垒的隧穿 (Potential Barrier Tunneling)**
+    *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/1Dpotentialbarrier.html)
 
-    Interactive Parameters: Adjust energy E, barrier height V_0​, and barrier width a to observe transitions between:
-
-        Quantum Tunneling (E<V_0​)
-
-        Quantum Reflection/Transmission (E>V_0​​)
-
-🛠 How to Use
-
-These demonstrations are built using web technologies (HTML5/JavaScript) and require no installation.
-
-    Clone the repository:
-
-    Open the .html files (e.g., 1D_Potential_Barrier.html) in any modern web browser (Chrome, Firefox, or Edge).
-
-  
+> **💡 提示 (Tip):** 
+> 点击上述链接即可在浏览器中直接运行演示，无需安装任何软件。
