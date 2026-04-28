@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>氢原子电子角向概率密度可视化</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { font-family: 'Arial', sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #4CAF50; }
+    h1 { color: #2c3e50; }
+    .content { display: flex; gap: 30px; }
+    .controls { width: 300px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .visualization { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .control-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; color: #2c3e50; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+    button { width: 100%; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; }
+    button:hover { background-color: #45a049; }
+    .formula-box { margin-top: 30px; padding: 15px; background-color: #e8f5e9; border-radius: 5px; border-left: 4px solid #4CAF50; }
+    .formula-title { font-weight: bold; margin-bottom: 10px; color: #2E7D32; }
+    .formula { font-family: 'Courier New', monospace; font-size: 16px; }
+    .plot-container { height: 600px; width: 100%; }
+    .error { color: #e53935; margin-top: 10px; font-weight: bold; }
+    .info-box { margin-top: 20px; padding: 15px; background-color: #e3f2fd; border-radius: 5px; border-left: 4px solid #2196F3; }
+    .info-title { font-weight: bold; margin-bottom: 10px; color: #1565C0; }
+    @media (max-width: 768px) { .content { flex-direction: column; } .controls { width: auto; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>氢原子电子角向概率密度可视化</h1>
+      <p>三维展示球谐函数 |Yₗₘ(θ,φ)|² 的概率分布</p>
+    </header>
+    <div class="content">
+      <div class="controls">
+        <div class="control-group">
+          <label for="preset">预设状态:</label>
+          <select id="preset">
+            <option value="custom">自定义</option>
+            <option value="px">pₓ轨道</option>
+            <option value="py">pᵧ轨道</option>
+            <option value="pz">p_z轨道</option>
+            <option value="dxy">d_xy轨道</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="n">主量子数 (n):</label>
+          <input type="number" id="n" min="1" value="2" step="1">
+        </div>
+        <div class="control-group">
+          <label for="l">角量子数 (l):</label>
+          <input type="number" id="l" min="0" max="1" value="1" step="1">
+        </div>
+        <div class="control-group">
+          <label for="m">磁量子数 (m):</label>
+          <input type="number" id="m" min="-1" max="1" value="0" step="1">
+        </div>
+        <div class="control-group">
+          <button id="visualize-btn">生成可视化</button>
+          <div id="error-message" class="error"></div>
+        </div>
+        <div class="formula-box">
+          <div class="formula-title">当前量子态:</div>
+          <div class="formula" id="quantum-state">(n, l, m) = (2, 1, 0)</div>
+          <div class="formula-title">角向概率密度:</div>
+          <div class="formula">|Y<sub id="Y-sub">1,0</sub>(θ,φ)|²</div>
+        </div>
+        <div class="info-box">
+          <div class="info-title">量子数规则:</div>
+          <ul>
+            <li>主量子数 n ≥ 1</li>
+            <li>角量子数 0 ≤ l < n</li>
+            <li>磁量子数 -l ≤ m ≤ l</li>
+          </ul>
+        </div>
+      </div>
+      <div class="visualization">
+        <div class="plot-container" id="plot"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const nInput = document.getElementById('n');
+      const lInput = document.getElementById('l');
+      const mInput = document.getElementById('m');
+      const visualizeBtn = document.getElementById('visualize-btn');
+      const errorMessage = document.getElementById('error-message');
+      const plotDiv = document.getElementById('plot');
+      const quantumState = document.getElementById('quantum-state');
+      const YSub = document.getElementById('Y-sub');
+      const preset = document.getElementById('preset');
+
+      preset.addEventListener('change', function () {
+        if (preset.value === 'px' || preset.value === 'py' || preset.value === 'pz') {
+          nInput.value = 2;
+          lInput.value = 1;
+          mInput.value = 0;
+        } else if (preset.value === 'dxy') {
+          nInput.value = 3;
+          lInput.value = 2;
+          mInput.value = 0;
+        }
+        visualize();
+      });
+
+      updateQuantumConstraints();
+      visualize();
+
+      function updateQuantumConstraints() {
+        const n = parseInt(nInput.value);
+        const l = parseInt(lInput.value);
+        lInput.max = n - 1;
+        if (l > n - 1) lInput.value = n - 1;
+        const currentL = parseInt(lInput.value);
+        mInput.min = -currentL;
+        mInput.max = currentL;
+        const m = parseInt(mInput.value);
+        if (m < -currentL) mInput.value = -currentL;
+        if (m > currentL) mInput.value = currentL;
+        updateQuantumStateDisplay();
+      }
+
+      function updateQuantumStateDisplay() {
+        const n = nInput.value;
+        const l = lInput.value;
+        const m = mInput.value;
+        quantumState.textContent = `(n, l, m) = (${n}, ${l}, ${m})`;
+        YSub.innerHTML = `${l},${m}`;
+      }
+
+      nInput.addEventListener('change', updateQuantumConstraints);
+      lInput.addEventListener('change', updateQuantumConstraints);
+      mInput.addEventListener('change', updateQuantumStateDisplay);
+      visualizeBtn.addEventListener('click', visualize);
+
+      function showError(message) {
+        errorMessage.textContent = message;
+      }
+
+      function factorial(n) {
+        return n <= 1 ? 1 : n * factorial(n - 1);
+      }
+
+      function associatedLegendreP(l, m, x) {
+        const pmm = Math.pow(-1, m) * Math.pow(1 - x * x, m / 2);
+        if (l === m) return pmm;
+        const pmm1 = x * (2 * m + 1) * pmm;
+        if (l === m + 1) return pmm1;
+        let pll = 0;
+        let pprev = pmm;
+        let pcurr = pmm1;
+        for (let ll = m + 2; ll <= l; ll++) {
+          pll = ((2 * ll - 1) * x * pcurr - (ll + m - 1) * pprev) / (ll - m);
+          pprev = pcurr;
+          pcurr = pll;
+        }
+        return pcurr;
+      }
+
+      function sphericalHarmonicY(l, m, theta, phi) {
+        const absM = Math.abs(m);
+        const x = Math.cos(theta);
+        const P_lm = associatedLegendreP(l, absM, x);
+        const norm = Math.sqrt((2*l+1)*factorial(l - absM) / (4*Math.PI*factorial(l + absM)));
+        const base = norm * P_lm;
+        return m >= 0 ? base * Math.cos(m * phi) : base * Math.sin(-m * phi);
+      }
+
+      function visualize() {
+        const n = parseInt(nInput.value);
+        const l = parseInt(lInput.value);
+        const m = parseInt(mInput.value);
+        if (n <= 0) return showError("主量子数n必须大于0");
+        if (l < 0 || l >= n) return showError(`角量子数l必须满足 0 ≤ l < n (当前n=${n})`);
+        if (Math.abs(m) > l) return showError(`磁量子数m必须满足 |m| ≤ l (当前l=${l})`);
+        errorMessage.textContent = '';
+        plotAngularDistribution(l, m);
+      }
+
+      function plotAngularDistribution(l, m) {
+        const resolution = 60;
+        const theta = [], phi = [], x = [], y = [], z = [], colors = [];
+        for (let i = 0; i <= resolution; i++) theta.push(Math.PI * i / resolution);
+        for (let j = 0; j <= resolution; j++) phi.push(2 * Math.PI * j / resolution);
+
+        for (let i = 0; i <= resolution; i++) {
+          for (let j = 0; j <= resolution; j++) {
+            const th = theta[i];
+            const ph = phi[j];
+            let Yval;
+            switch (preset.value) {
+              case 'px':
+                Yval = (sphericalHarmonicY(1, -1, th, ph) - sphericalHarmonicY(1, 1, th, ph)) / Math.sqrt(2);
+                break;
+              case 'py':
+                Yval = (sphericalHarmonicY(1, -1, th, ph) + sphericalHarmonicY(1, 1, th, ph)) / Math.sqrt(2);
+                break;
+              case 'pz':
+                Yval = sphericalHarmonicY(1, 0, th, ph);
+                break;
+              case 'dxy':
+                Yval = (sphericalHarmonicY(2, -2, th, ph) - sphericalHarmonicY(2, 2, th, ph)) / Math.sqrt(2);
+                break;
+              default:
+                Yval = sphericalHarmonicY(l, m, th, ph);
+            }
+            const r = Math.abs(Yval);
+            x.push(r * Math.sin(th) * Math.cos(ph));
+            y.push(r * Math.sin(th) * Math.sin(ph));
+            z.push(r * Math.cos(th));
+            colors.push(`rgba(30, 136, 229, ${Math.min(1, r * r * 10)})`);
+          }
+        }
+
+        const mainTrace = {
+          x: x,
+          y: y,
+          z: z,
+          mode: 'markers',
+          marker: { size: 2.5, color: colors, opacity: 0.8 },
+          type: 'scatter3d'
+        };
+
+        const layout = {
+          title: `角向概率密度分布（${preset.value === 'custom' ? `|Y<sub>${l},${m}</sub>(θ,φ)|²` : preset.value}）`,
+          margin: { l: 0, r: 0, b: 0, t: 50 },
+          scene: {
+            xaxis: { title: 'X', range: [-1, 1] },
+            yaxis: { title: 'Y', range: [-1, 1] },
+            zaxis: { title: 'Z', range: [-1, 1] },
+            aspectratio: { x: 1, y: 1, z: 1 },
+            camera: { eye: { x: 1.5, y: 1.5, z: 1 } }
+          },
+          showlegend: false
+        };
+
+        Plotly.newPlot(plotDiv, [mainTrace], layout);
+      }
+    });
+  </script>
+</body>
+</html>

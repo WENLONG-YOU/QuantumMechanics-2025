@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>氢原子径向概率分布</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .controls { 
+            margin: 20px; 
+            padding: 15px;
+            background: #2c3e50;
+            border-radius: 8px;
+        }
+        .num-input {
+            width: 80px;
+            margin: 0 10px;
+            padding: 8px;
+            background: #34495e;
+            border: 1px solid #7f8c8d;
+            color: #ecf0f1;
+            border-radius: 4px;
+        }
+        #radial-plot {
+            width: 95%;
+            height: 600px;
+            margin: 20px;
+            background: #1a1a1a;
+        }
+        .expression {
+            font-size: 18px;
+            margin: 15px;
+            color: #bdc3c7;
+            font-family: "Cambria Math", Symbola, serif;
+        }
+        label {
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label>主量子数 n: 
+            <input type="number" id="n" class="num-input" min="1" max="5" value="1">
+        </label>
+        <label>角量子数 l: 
+            <input type="number" id="l" class="num-input" min="0" max="0" value="0">
+        </label>
+    </div>
+    <div class="expression" id="radial-expr"></div>
+    <div id="radial-plot"></div>
+
+<script>
+// 下标转换函数
+function toSubscript(num) {
+    const digits = '₀₁₂₃₄₅₆₇₈₉';
+    return num.toString().split('').map(d => digits[d] || d).join('');
+}
+
+// 量子数输入元素
+const nInput = document.getElementById('n');
+const lInput = document.getElementById('l');
+
+// 自动更新量子数约束
+function updateConstraints() {
+    const n = Math.min(5, Math.max(1, parseInt(nInput.value) || 1));
+    const lMax = n - 1;
+    
+    nInput.value = n;
+    lInput.max = lMax;
+    lInput.value = Math.min(parseInt(lInput.value), lMax);
+}
+
+// 氢原子径向波函数（精确实现）
+function radialWaveFunction(n, l, r) {
+    const a0 = 1; // 玻尔半径
+    const ρ = r / a0;
+    
+    // 归一化系数计算
+    const normalization = Math.sqrt(
+        Math.pow(2/(n*a0), 3) * 
+        factorial(n-l-1) / 
+        (2*n * factorial(n+l))
+    );
+    
+    // 广义拉盖尔多项式项
+    const L = associatedLaguerre(n-l-1, 2*l+1, 2*ρ/n);
+    
+    return normalization * Math.exp(-ρ/n) * Math.pow(2*ρ/n, l) * L;
+}
+
+// 数学工具函数
+function factorial(k) {
+    return k <= 1 ? 1 : k * factorial(k-1);
+}
+
+function associatedLaguerre(k, α, x) {
+    let sum = 0;
+    for(let m=0; m<=k; m++) {
+        sum += (-1)**m * factorial(k+α) / (factorial(k-m)*factorial(α+m)*factorial(m)) * x**m;
+    }
+    return sum;
+}
+
+// 动态更新绘图
+function updatePlot() {
+    updateConstraints();
+    
+    const n = parseInt(nInput.value);
+    const l = parseInt(lInput.value);
+    
+    // 生成数据
+    const r = Array.from({length: 200}, (_, i) => i*0.2);
+    const P = r.map(x => {
+        const R = radialWaveFunction(n, l, x);
+        return x**2 * R**2; // P(r) = r²|R(r)|²
+    });
+
+    // 更新公式显示
+    document.getElementById('radial-expr').innerHTML = 
+        `P(r) = r² |R${toSubscript(n)}${toSubscript(l)}(r)|²`;
+
+    // 使用Plotly绘制
+    Plotly.react('radial-plot', [{
+        x: r,
+        y: P,
+        mode: 'lines',
+        line: {
+            color: '#e74c3c',
+            width: 3,
+            shape: 'spline'
+        },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(231, 76, 60, 0.2)'
+    }], {
+        title: `氢原子电子径向概率分布 (n=${n}, l=${l})`,
+        margin: {t: 40, b: 60, l: 80, r: 40},
+        paper_bgcolor: '#1a1a1a',
+        plot_bgcolor: '#1a1a1a',
+        xaxis: {
+            title: '原子半径 (a₀)',
+            gridcolor: '#7f8c8d',
+            titlefont: {color: '#ecf0f1'},
+            tickfont: {color: '#bdc3c7'}
+        },
+        yaxis: {
+            title: '概率密度',
+            gridcolor: '#7f8c8d',
+            titlefont: {color: '#ecf0f1'},
+            tickfont: {color: '#bdc3c7'},
+            zerolinecolor: '#7f8c8d'
+        }
+    });
+}
+
+// 事件监听
+[nInput, lInput].forEach(input => {
+    input.addEventListener('input', () => {
+        requestAnimationFrame(updatePlot);
+    });
+});
+
+// 初始加载显示
+updatePlot();
+</script>
+</body>
+</html>
