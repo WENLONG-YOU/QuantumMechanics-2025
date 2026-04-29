@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氢原子波函数专项练习</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --bg: #f8fafc; }
+        body { font-family: -apple-system, "SF Pro SC", "PingFang SC", sans-serif; background: var(--bg); padding: 16px; color: #1e293b; max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 1.25rem; margin-bottom: 8px; color: #0f172a; }
+        .progress { font-size: 0.875rem; color: #64748b; }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; min-height: 200px; }
+        .question { font-size: 1.1rem; font-weight: 600; line-height: 1.5; margin-bottom: 20px; }
+        .option { display: block; width: 100%; padding: 14px 16px; margin-bottom: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; background: white; text-align: left; font-size: 1rem; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+        .option:active { transform: scale(0.98); background: #f1f5f9; }
+        .option.correct { background: #dcfce7; border-color: var(--success); color: #166534; }
+        .option.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        .rationale { margin-top: 15px; padding: 12px; background: #f0f7ff; border-radius: 8px; font-size: 0.9rem; color: #1e40af; display: none; }
+        .btn-next { display: none; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; margin-top: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        #result-page { display: none; text-align: center; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 24px auto; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-page">
+    <div class="header">
+        <h1>氢原子波函数与径向概率分布测试</h1>
+        <div class="progress">第 <span id="current-num">1</span> / 10 题</div>
+    </div>
+    <div class="card">
+        <div id="q-text" class="question">正在准备量子系统...</div>
+        <div id="options-container"></div>
+        <div id="rationale-box" class="rationale"></div>
+    </div>
+    <button id="btn-next" class="btn-next" onclick="nextQuestion()">下一题</button>
+</div>
+
+<div id="result-page" class="card">
+    <h2>测试完成</h2>
+    <div class="score-circle" id="final-score">0</div>
+    <p id="score-comment"></p>
+    <button onclick="location.reload()" style="background:#64748b; margin-top: 20px;" class="btn-next" style="display:block">重新开始</button>
+</div>
+
+<script>
+    const quizData = [
+        { q: "在氢原子定态薛定谔方程的解中，径向概率分布函数 \\(w(r)\\) 与径向波函数 \\(R(r)\\) 的关系是：", options: ["\\(w(r) = |R(r)|^2\\)", "\\(w(r) = r |R(r)|^2\\)", "\\(w(r) = r^2 |R(r)|^2\\)", "\\(w(r) = 4\\pi r |R(r)|^2\\)"], correct: 2, rationale: "根据球坐标体积元 \\(dV = r^2 \\sin\\theta dr d\\theta d\\phi\\)，径向积分后的概率分布包含 \\(r^2\\) 项。" },
+        { q: "对于氢原子基态（1s态），其最可几半径 \\(r_1\\) 等于：", options: ["0", "\\(a\\) (玻尔半径)", "0.5\\(a\\)", "1.5\\(a\\)"], correct: 1, rationale: "对 \\(r^2 e^{-2r/a}\\) 求导可知，极大值点位于 \\(r=a\\) 处。" },
+        { q: "氢原子基态电子动能平均值 \\(\\bar{T}\\) 与势能平均值 \\(\\bar{V}\\) 满足的维里定理是：", options: ["\\(\\bar{T} = \\bar{V}\\)", "\\(\\bar{T} = -\\frac{1}{2}\\bar{V}\\)", "\\(\\bar{T} = -2\\bar{V}\\)", "\\(\\bar{T} = -\\bar{V}\\)"], correct: 1, rationale: "库仑场（平方反比力）中，平均动能等于负二分之一的平均势能。" },
+        { q: "为什么基态波函数在 \\(r=0\\) 最大，但电子出现在该处的概率却不是最大？", options: ["原子核产生排斥力", "测不准原理限制", "\\(r=0\\) 处的球壳体积元为零", "电子具有波动性"], correct: 2, rationale: "径向概率分布受 \\(r^2\\) 调制，在原点处概率密度虽高，但空间体积为零。" },
+        { q: "对于 \\(n=2, l=1\\) 的 2p 态，其径向波函数正比于 \\(r \\cdot e^{-r/2a}\\)，其 \\(w(r)\\) 正比于：", options: ["\\(r^2 e^{-r/a}\\)", "\\(r^3 e^{-r/a}\\)", "\\(r^4 e^{-r/a}\\)", "\\(r^4 e^{-2r/a}\\)"], correct: 2, rationale: "\\(w(r) = r^2 |R|^2 \\propto r^2 (r e^{-r/2a})^2 = r^4 e^{-r/a}\\)。" },
+        { q: "简答题：最可几半径（Most Probable Radius）的物理意义是：", options: ["电子被发现几率最大的径向球壳半径", "电子运行轨道的固定半径", "电子到核的平均距离", "电子云的边缘半径"], correct: 0, rationale: "它代表径向分布函数的峰值，即在该半径附近寻找电子成功率最高。" },
+        { q: "求解 2p 态最可几半径时，对 \\(f(r) = r^4 e^{-r/a}\\) 求导，驻点 \\(r_m\\) 为：", options: ["\\(2a\\)", "\\(4a\\)", "\\(a\\)", "\\(0.25a\\)"], correct: 1, rationale: "求导得 \\(4r^3 - r^4/a = 0\\)，解得 \\(r = 4a\\)。" },
+        { q: "为什么 2p 态的最可几半径比 1s 态大得多？", options: ["主量子数 \\(n\\) 增大导致能量升高", "电子自旋方向改变", "核电荷数减小了", "受其他电子屏蔽"], correct: 0, rationale: "主量子数增大，电子能量更高，平均分布区域向核外延展。" },
+        { q: "当 \\(r \\to \\infty\\) 时，所有氢原子定态的径向概率分布 \\(w(r)\\) 都趋于：", options: ["常数", "无穷大", "0", "1"], correct: 2, rationale: "受束缚态指数衰减项限制，无穷远处发现电子概率为零。" },
+        { q: "如何利用维里定理估计总能量 \\(\\bar{E}\\)？", options: ["\\(\\bar{E} = -\\bar{T}\\)", "\\(\\bar{E} = 2\\bar{T}\\)", "\\(\\bar{E} = \\bar{V}\\)", "\\(\\bar{E} = 0\\)"], correct: 0, rationale: "\\(\\bar{E} = \\bar{T} + \\bar{V} = \\bar{T} - 2\\bar{T} = -\\bar{T}\\)。" }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let answered = false;
+
+    function renderQuestion() {
+        const q = quizData[currentIdx];
+        document.getElementById('current-num').innerText = currentIdx + 1;
+        document.getElementById('q-text').innerText = q.q;
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('rationale-box').style.display = 'none';
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        answered = false;
+
+        q.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerHTML = opt;
+            btn.onclick = () => handleSelect(i, btn);
+            container.appendChild(btn);
+        });
+        
+        if (window.MathJax) MathJax.typesetPromise();
+    }
+
+    function handleSelect(idx, el) {
+        if (answered) return;
+        answered = true;
+        const q = quizData[currentIdx];
+        const options = document.getElementsByClassName('option');
+        
+        if (idx === q.correct) {
+            el.classList.add('correct');
+            score++;
+        } else {
+            el.classList.add('wrong');
+            options[q.correct].classList.add('correct');
+        }
+
+        const rationale = document.getElementById('rationale-box');
+        rationale.innerHTML = "<strong>解析：</strong>" + q.rationale;
+        rationale.style.display = 'block';
+        document.getElementById('btn-next').style.display = 'block';
+        if (window.MathJax) MathJax.typesetPromise();
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-page').style.display = 'none';
+        document.getElementById('result-page').style.display = 'block';
+        document.getElementById('final-score').innerText = score;
+        const comment = score >= 8 ? "专家水准！量子力学直觉非常敏锐。" : (score >= 6 ? "表现不错，建议再复习一下激发态推导。" : "需要加强基础，建议结合教材推导一遍。");
+        document.getElementById('score-comment').innerText = comment;
+    }
+
+    window.onload = renderQuestion;
+</script>
+</body>
+</html>
