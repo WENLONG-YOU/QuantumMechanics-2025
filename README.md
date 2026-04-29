@@ -20,10 +20,8 @@
     *   [点击进入演示](1Dharmonicoscillator.html)
 *   **📏 氢原子径向概率分布 (Radial Probability)**
     *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/H_Atom_RadialWF.html)
-    *   *展示不同量子态下的 $P(r) = r^2 |R(r)|^2$ 分布*
 *   **🌐 氢原子角向概率密度 (Angular Density)**
     *   [点击进入演示](https://wenlong-you.github.io/QuantumMechanics/H_Atom_SphericalHarmonics.html)
-    *   *可视化球谐函数 $|Y(\theta, \phi)|^2$ 的 3D 形状*
 
 > **💡 提示 (Tip):** 
 > 点击上述链接即可在浏览器中直接运行演示，无需安装任何软件。
