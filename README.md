@@ -1,73 +1,52 @@
 <div align="center">
 
-# ⚛️ 量子力学课程交互式演示库
-### Interactive Visualization for Quantum Mechanics @ NUAA
+# ⚛️ 量子力学交互演示库
+**Interactive Visualization for Quantum Mechanics @ NUAA**
 
-[![Institution](https://img.shields.io/badge/School-NUAA_物理学院-blue?style=flat-square)](http://physics.nuaa.edu.cn/)
-[![Language](https://img.shields.io/badge/Language-HTML5/JS-orange?style=flat-square)](#)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/wenlong-you/QuantumMechanics?style=social)](https://github.com/wenlong-you/QuantumMechanics)
+[![School](https://img.shields.io/badge/NUAA-物理学院-blue.svg)](http://physics.nuaa.edu.cn/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-物理学院《量子力学》课程辅助教学工具库，旨在通过交互式可视化帮助学生直观理解抽象的量子概念。
+物理学院课程辅助工具：点击下方链接，直接在浏览器中运行演示。
 
-[🚀 立即开始探索](#-核心演示模块-core-demonstrations) • [📝 专项练习](#-配套练习模块-practice)
+[🚀 立即探索演示](#-快速访问) • [📝 进入专项练习](#-专项练习)
 
 </div>
 
 ---
 
-## 📖 项目简介
-本仓库是专为 **南京航空航天大学 (NUAA)** 物理学院设计的教学辅助系统。所有演示均基于 Web 技术开发，无需安装环境，点击链接即可在浏览器（PC/移动端）中运行。
+### 🎮 快速访问 (Live Demos)
 
----
-
-## 🔗 核心演示模块 (Core Demonstrations)
-
-我们将复杂的波函数与势阱模型转化为可交互的动态图表，支持实时调整量子数与势能参数。
-
-| 模块名称 | 演示内容说明 | 操作入口 |
+| 基础模型 | 原子物理 | 教学辅助 |
 | :--- | :--- | :--- |
-| **🎲 点名系统** | 课堂随机点名与互动辅助 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/dianming.html) |
-| **🪜 无穷深势阱** | 离散能级与波函数驻波分布 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/1DInfinitewell.html) |
-| **🕳️ 有限深势阱** | 束缚态能级与透入禁区的波函数 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/1Dfinitewell.html) |
-| **🚧 势垒隧穿** | 穿透概率与反射系数的参数化演示 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/1Dpotentialbarrier.html) |
-| **🎵 谐振子** | 厄米多项式与能量量子化特性 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/1Dharmonicoscillator.html) |
-| **📏 径向分布** | 氢原子 $R_{nl}(r)$ 径向概率分布可视化 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/H_Atom_RadialWF.html) |
-| **🌐 角向密度** | 氢原子 $Y_{lm}(\theta,\phi)$ 球谐函数空间分布 | [进入 ➜](https://wenlong-you.github.io/QuantumMechanics/H_Atom_SphericalHarmonics.html) |
+| 🪜 [一维无穷深势阱](https://wenlong-you.github.io/QuantumMechanics/1DInfinitewell.html) | 📏 [氢原子径向分布](https://wenlong-you.github.io/QuantumMechanics/H_Atom_RadialWF.html) | 🎲 [课堂随机点名](https://wenlong-you.github.io/QuantumMechanics/dianming.html) |
+| 🕳️ [一维有限深势阱](https://wenlong-you.github.io/QuantumMechanics/1Dfinitewell.html) | 🌐 [氢原子角向密度](https://wenlong-you.github.io/QuantumMechanics/H_Atom_SphericalHarmonics.html) | |
+| 🚧 [一维势垒隧穿](https://wenlong-you.github.io/QuantumMechanics/1Dpotentialbarrier.html) | | |
+| 🎵 [一维量子谐振子](https://wenlong-you.github.io/QuantumMechanics/1Dharmonicoscillator.html) | | |
 
 ---
 
-## 📝 配套练习模块 (Practice)
+### 📝 专项练习 (Practice)
 
-通过针对性的随机练习题库，巩固核心公式与物理直觉。
-
-*   🎯 **[中心力场与角向概率分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Angular_Test.html)**
-    *   *侧重：球谐函数空间指向性、磁量子数 $m$ 的物理意义。*
-*   🧪 **[氢原子波函数与径向概率分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Radial_Test.html)**
-    *   *侧重：节点数计算、最可几半径、能量本征值关系。*
-*   📑 **[中心力场综合练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Test.html)**
-    *   *侧重：多量子数耦合、简并度分析等综合考点。*
+*   🎯 **[中心力场与角向分布](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Angular_Test.html)** —— *掌握球谐函数与 $m$ 的物理意义*
+*   🧪 **[波函数与径向分布](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Radial_Test.html)** —— *掌握节点数、最可几半径与能量*
+*   📑 **[中心力场综合练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Test.html)** —— *考前冲刺与简并度分析*
 
 ---
 
-## 🛠️ 如何使用
+### 🛠️ 快速上手
 
-1.  **直接运行：** 点击上方列表中的 **[进入 ➜]** 链接。
-2.  **本地部署：** 
-    ```bash
-    git clone [https://github.com/wenlong-you/QuantumMechanics.git](https://github.com/wenlong-you/QuantumMechanics.git)
-    cd QuantumMechanics
-    # 直接用浏览器打开任意 .html 文件即可
-    ```
+*   **在线使用：** 直接点击上方链接。
+*   **本地运行：** `git clone` 本仓库后，浏览器打开 `.html` 文件即可。
 
 > [!TIP]
-> **提示：** 演示页面针对移动端进行了适配，建议在平板电脑或手机横屏下获得最佳视觉体验。
+> **移动端建议：** 手机用户请**横屏**浏览以获得最佳交互效果。
 
 ---
 
 <div align="center">
 
-**如果你觉得这个项目有帮助，欢迎点一个 Star ⭐**
-
+**感谢支持！点击上方按钮点亮 ⭐**  
 © 2026 NUAA 物理学院 · [Wenlong You](https://github.com/wenlong-you)
 
 </div>
