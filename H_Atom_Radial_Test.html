@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>氢原子量子力学专项测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --gray: #64748b; --bg: #f1f5f9; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 500px; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-top: 20px; }
+        .progress-bar { font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .question { font-size: 1.15rem; font-weight: 700; line-height: 1.5; margin-bottom: 20px; color: #1e293b; }
+        .option { display: block; width: 100%; padding: 15px; margin-bottom: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; text-align: left; font-size: 1rem; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
+        .option.correct { background: #dcfce7; border-color: var(--success); color: #166534; }
+        .option.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        .rationale { background: #f0f7ff; padding: 15px; border-radius: 10px; font-size: 0.9rem; color: #1e40af; margin-top: 15px; display: none; }
+        .footer-btns { display: flex; gap: 10px; margin-top: 20px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-skip { background: #e2e8f0; color: #475569; }
+        .btn-next { background: var(--primary); color: white; display: none; }
+        
+        /* 统计结果页面样式 */
+        .result-header { text-align: center; color: #0f172a; margin-bottom: 20px; }
+        .score-big { font-size: 3rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-item { background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; }
+        .stat-label { font-size: 0.85rem; color: var(--gray); display: block; }
+        .stat-val { font-size: 1.25rem; font-weight: 700; margin-top: 5px; }
+        .val-correct { color: var(--success); }
+        .val-wrong { color: var(--danger); }
+        .val-skip { color: var(--gray); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="quiz-page">
+        <div class="progress-bar">
+            <span>第 <span id="cur-idx">1</span> / 10 题</span>
+            <span id="timer">专项练习</span>
+        </div>
+        <div class="card">
+            <div id="q-text" class="question">加载中...</div>
+            <div id="options-box"></div>
+            <div id="rationale-box" class="rationale"></div>
+            
+            <div class="footer-btns">
+                <button id="skip-btn" class="btn-skip" onclick="handleSkip()">跳过本题</button>
+                <button id="next-btn" class="btn-next" onclick="nextQuestion()">下一题</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-page" style="display: none;">
+        <div class="card">
+            <div class="result-header">
+                <h2 style="margin:0">测验结束！</h2>
+                <p style="color:var(--gray)">完成了！这是你的表现统计：</p>
+                <div class="score-big"><span id="res-score">0</span>/10</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">准确率</span>
+                    <div class="stat-val" id="res-accuracy">0%</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">正确</span>
+                    <div class="stat-val val-correct" id="res-correct">0</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">错误</span>
+                    <div class="stat-val val-wrong" id="res-wrong">0</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">跳过</span>
+                    <div class="stat-val val-skip" id="res-skip">0</div>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" style="background:var(--primary); color:white; width:100%; margin-top:25px;">重新开始</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { q: "在氢原子定态薛定谔方程的解中，径向概率分布函数 \\(w(r)\\) 与径向波函数 \\(R(r)\\) 的关系是：", options: ["\\(w(r) = |R(r)|^2\\)", "\\(w(r) = r |R(r)|^2\\)", "\\(w(r) = r^2 |R(r)|^2\\)", "\\(w(r) = 4\\pi r |R(r)|^2\\)"], correct: 2, rationale: "体积元包含 \\(r^2\\) 因子，积分后得到径向概率分布。" },
+        { q: "对于氢原子基态（1s态），其最可几半径 \\(r_1\\) 等于：", options: ["0", "\\(a\\) (玻尔半径)", "0.5\\(a\\)", "1.5\\(a\\)"], correct: 1, rationale: "对基态概率函数求导，驻点在 \\(r=a\\) 处。" },
+        { q: "氢原子基态电子动能平均值 \\(\\bar{T}\\) 与势能平均值 \\(\\bar{V}\\) 满足的关系是：", options: ["\\(\\bar{T} = \\bar{V}\\)", "\\(\\bar{T} = -\\frac{1}{2}\\bar{V}\\)", "\\(\\bar{T} = -2\\bar{V}\\)", "\\(\\bar{T} = -\\bar{V}\\)"], correct: 1, rationale: "这是库仑势场中的维里定理结论。" },
+        { q: "为什么基态波函数在 \\(r=0\\) 最大，但电子出现在核处的概率却不是最大？", options: ["原子核产生排斥力", "测不准原理限制", "\\(r=0\\) 处的球壳体积元为零", "电子具有波动性"], correct: 2, rationale: "概率分布包含 \\(r^2\\) 项，在原点处为 0。" },
+        { q: "对于 2p 态 (\\(n=2, l=1\\))，其径向概率分布函数 \\(w(r)\\) 正比于：", options: ["\\(r^2 e^{-r/a}\\)", "\\(r^3 e^{-r/a}\\)", "\\(r^4 e^{-r/a}\\)", "\\(r^4 e^{-2r/a}\\)"], correct: 2, rationale: "\\(w(r) = r^2 |R_{21}|^2 \\propto r^2 (r e^{-r/2a})^2\\)。" },
+        { q: "简答题：最可几半径（Most Probable Radius）的物理意义是：", options: ["电子被发现几率最大的径向球壳半径", "电子运行轨道的固定半径", "电子到核的平均距离", "电子云的边缘半径"], correct: 0, rationale: "代表径向概率分布函数的极大值位置。" },
+        { q: "求解 2p 态最可几半径时，其驻点 \\(r_m\\) 满足：", options: ["\\(2a\\)", "\\(4a\\)", "\\(a\\)", "\\(0.25a\\)"], correct: 1, rationale: "求导 \\(r^4 e^{-r/a}\\) 得出峰值在 \\(4a\\)。" },
+        { q: "为什么 2p 态的最可几半径比 1s 态大得多？", options: ["主量子数 \\(n\\) 增大导致能量升高", "电子自旋方向改变", "核电荷数减小了", "受其他电子屏蔽"], correct: 0, rationale: "能量越高，波函数向核外延展越远。" },
+        { q: "当 \\(r \\to \\infty\\) 时，所有氢原子定态的径向概率分布都趋于：", options: ["常数", "无穷大", "0", "1"], correct: 2, rationale: "指数衰减项保证了无穷远概率为 0。" },
+        { q: "如何利用维里定理估计总能量 \\(\\bar{E}\\)？", options: ["\\(\\bar{E} = -\\bar{T}\\)", "\\(\\bar{E} = 2\\bar{T}\\)", "\\(\\bar{E} = \\bar{V}\\)", "\\(\\bar{E} = 0\\)"], correct: 0, rationale: "\\(\\bar{E} = \\bar{T} + \\bar{V} = \\bar{T} - 2\\bar{T} = -\\bar{T}\\)。" }
+    ];
+
+    let currentIdx = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let skipCount = 0;
+    let answered = false;
+
+    function renderQuestion() {
+        answered = false;
+        const q = quizData[currentIdx];
+        document.getElementById('cur-idx').innerText = currentIdx + 1;
+        document.getElementById('q-text').innerText = q.q;
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('skip-btn').style.display = 'block';
+        document.getElementById('rationale-box').style.display = 'none';
+        
+        const box = document.getElementById('options-box');
+        box.innerHTML = '';
+        q.options.forEach((opt, i) => {
+            const b = document.createElement('button');
+            b.className = 'option';
+            b.innerHTML = opt;
+            b.onclick = () => handleSelect(i, b);
+            box.appendChild(b);
+        });
+        MathJax.typesetPromise();
+    }
+
+    function handleSelect(idx, el) {
+        if (answered) return;
+        answered = true;
+        const q = quizData[currentIdx];
+        const options = document.getElementsByClassName('option');
+        
+        if (idx === q.correct) {
+            el.classList.add('correct');
+            correctCount++;
+        } else {
+            el.classList.add('wrong');
+            options[q.correct].classList.add('correct');
+            wrongCount++;
+        }
+
+        document.getElementById('rationale-box').innerHTML = "<b>解析：</b>" + q.rationale;
+        document.getElementById('rationale-box').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'block';
+        document.getElementById('skip-btn').style.display = 'none';
+        MathJax.typesetPromise();
+    }
+
+    function handleSkip() {
+        if (answered) return;
+        skipCount++;
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-page').style.display = 'none';
+        document.getElementById('result-page').style.display = 'block';
+        
+        document.getElementById('res-score').innerText = correctCount;
+        document.getElementById('res-correct').innerText = correctCount;
+        document.getElementById('res-wrong').innerText = wrongCount;
+        document.getElementById('res-skip').innerText = skipCount;
+        
+        const accuracy = Math.round((correctCount / quizData.length) * 100);
+        document.getElementById('res-accuracy').innerText = accuracy + "%";
+    }
+
+    window.onload = renderQuestion;
+</script>
+</body>
+</html>
