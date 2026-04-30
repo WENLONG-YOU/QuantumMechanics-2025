@@ -27,7 +27,8 @@
 
 为了帮助大家更好地掌握核心概念，特此增加以下专项练习：
 *   🌐 **[中心力场与角向概率分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Angular_Test.html)**
-*   🧪 **[氢原子波函数与径向概率分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Test.html)**
+*   🧪 **[氢原子波函数与径向概率分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Radial_Test.html)**
+*   🚧 **[中心力场练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Test.html)**
     
           
 > **💡 提示 (Tip):** 
