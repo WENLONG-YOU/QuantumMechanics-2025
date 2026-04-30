@@ -3,133 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>氢原子波函数与径向概率分布专项练习</title>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>中心力场专项练习 (修正渲染版)</title>
+    <!-- 引入 MathJax 配置，增强对行内公式的支持 -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            chtml: { displayAlign: 'left' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --gray: #64748b; --bg: #f1f5f9; }
+        :root { --primary: #0891b2; --success: #22c55e; --danger: #ef4444; --gray: #64748b; --bg: #f0f9ff; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         #app { width: 100%; max-width: 500px; }
-        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-top: 20px; }
-        .progress-bar { font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; display: flex; justify-content: space-between; }
-        .question { font-size: 1.15rem; font-weight: 700; line-height: 1.5; margin-bottom: 20px; color: #1e293b; }
-        .option { display: block; width: 100%; padding: 15px; margin-bottom: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; text-align: left; font-size: 1rem; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-top: 15px; }
+        .header-info { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--gray); margin-bottom: 10px; }
+        .question { font-size: 1.1rem; font-weight: 700; line-height: 1.5; margin-bottom: 20px; color: #1e293b; }
+        .option { display: block; width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; text-align: left; font-size: 1rem; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
         .option.correct { background: #dcfce7; border-color: var(--success); color: #166534; }
         .option.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
-        .rationale { background: #f0f7ff; padding: 15px; border-radius: 10px; font-size: 0.9rem; color: #1e40af; margin-top: 15px; display: none; }
-        .footer-btns { display: flex; gap: 10px; margin-top: 20px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-skip { background: #e2e8f0; color: #475569; }
+        .option-label { font-weight: 800; color: var(--primary); margin-right: 8px; }
+        .rationale { background: #ecfeff; border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; font-size: 0.9rem; color: #164e63; margin-top: 15px; display: none; line-height: 1.6; }
+        .footer { margin-top: 20px; display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
         .btn-next { background: var(--primary); color: white; display: none; }
-        
-        /* 统计结果页面样式 */
-        .result-header { text-align: center; color: #0f172a; margin-bottom: 20px; }
-        .score-big { font-size: 3rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .stat-item { background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; }
-        .stat-label { font-size: 0.85rem; color: var(--gray); display: block; }
-        .stat-val { font-size: 1.25rem; font-weight: 700; margin-top: 5px; }
-        .val-correct { color: var(--success); }
-        .val-wrong { color: var(--danger); }
-        .val-skip { color: var(--gray); }
+        .score-box { text-align: center; padding: 20px; }
+        .score-num { font-size: 3.5rem; font-weight: 800; color: var(--primary); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stat-item { background: #f8fafc; padding: 10px; border-radius: 12px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="quiz-page">
-        <div class="progress-bar">
-            <span>第 <span id="cur-idx">1</span> / 10 题</span>
-            <span id="timer">专项练习</span>
+    <div id="quiz-container">
+        <div class="header-info">
+            <span>第 <span id="current-count">1</span> / 10 题</span>
+            <span>题库随机抽取</span>
         </div>
         <div class="card">
-            <div id="q-text" class="question">加载中...</div>
+            <!-- 修正：使用 innerHTML 确保 MathJax 识别 LaTeX -->
+            <div id="q-text" class="question">正在加载量子场...</div>
             <div id="options-box"></div>
             <div id="rationale-box" class="rationale"></div>
-            
-            <div class="footer-btns">
-                <button id="skip-btn" class="btn-skip" onclick="handleSkip()">跳过本题</button>
-                <button id="next-btn" class="btn-next" onclick="nextQuestion()">下一题</button>
+            <div class="footer">
+                <button class="btn-next" id="next-btn" onclick="nextQuestion()">下一题</button>
             </div>
         </div>
     </div>
 
-    <div id="result-page" style="display: none;">
-        <div class="card">
-            <div class="result-header">
-                <h2 style="margin:0">测验结束！</h2>
-                <p style="color:var(--gray)">完成了！这是你的表现统计：</p>
-                <div class="score-big"><span id="res-score">0</span>/10</div>
-            </div>
-            
+    <div id="result-page" style="display:none;">
+        <div class="card score-box">
+            <h2>测验结束！</h2>
+            <div class="score-num" id="res-score">0</div>
+            <p>准确率: <span id="res-acc">0%</span></p>
             <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-label">准确率</span>
-                    <div class="stat-val" id="res-accuracy">0%</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">正确</span>
-                    <div class="stat-val val-correct" id="res-correct">0</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">错误</span>
-                    <div class="stat-val val-wrong" id="res-wrong">0</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">跳过</span>
-                    <div class="stat-val val-skip" id="res-skip">0</div>
-                </div>
+                <div class="stat-item">正确: <span id="res-correct" style="color:var(--success)">0</span></div>
+                <div class="stat-item">错误: <span id="res-wrong" style="color:var(--danger)">0</span></div>
             </div>
-            
-            <button onclick="location.reload()" style="background:var(--primary); color:white; width:100%; margin-top:25px;">重新开始</button>
+            <button onclick="location.reload()" style="background:var(--primary); color:white; width:100%; margin-top:20px;">重新抽取10题</button>
         </div>
     </div>
 </div>
 
 <script>
-    const quizData = [
-        { q: "在氢原子定态薛定谔方程的解中，径向概率分布函数 \\(w(r)\\) 与径向波函数 \\(R(r)\\) 的关系是：", options: ["\\(w(r) = |R(r)|^2\\)", "\\(w(r) = r |R(r)|^2\\)", "\\(w(r) = r^2 |R(r)|^2\\)", "\\(w(r) = 4\\pi r |R(r)|^2\\)"], correct: 2, rationale: "体积元包含 \\(r^2\\) 因子，积分后得到径向概率分布。" },
-        { q: "对于氢原子基态（1s态），其最可几半径 \\(r_1\\) 等于：", options: ["0", "\\(a\\) (玻尔半径)", "0.5\\(a\\)", "1.5\\(a\\)"], correct: 1, rationale: "对基态概率函数求导，驻点在 \\(r=a\\) 处。" },
-        { q: "氢原子基态电子动能平均值 \\(\\bar{T}\\) 与势能平均值 \\(\\bar{V}\\) 满足的关系是：", options: ["\\(\\bar{T} = \\bar{V}\\)", "\\(\\bar{T} = -\\frac{1}{2}\\bar{V}\\)", "\\(\\bar{T} = -2\\bar{V}\\)", "\\(\\bar{T} = -\\bar{V}\\)"], correct: 1, rationale: "这是库仑势场中的维里定理结论。" },
-        { q: "为什么基态波函数在 \\(r=0\\) 最大，但电子出现在核处的概率却不是最大？", options: ["原子核产生排斥力", "测不准原理限制", "\\(r=0\\) 处的球壳体积元为零", "电子具有波动性"], correct: 2, rationale: "概率分布包含 \\(r^2\\) 项，在原点处为 0。" },
-        { q: "对于 2p 态 (\\(n=2, l=1\\))，其径向概率分布函数 \\(w(r)\\) 正比于：", options: ["\\(r^2 e^{-r/a}\\)", "\\(r^3 e^{-r/a}\\)", "\\(r^4 e^{-r/a}\\)", "\\(r^4 e^{-2r/a}\\)"], correct: 2, rationale: "\\(w(r) = r^2 |R_{21}|^2 \\propto r^2 (r e^{-r/2a})^2\\)。" },
-        { q: "简答题：最可几半径（Most Probable Radius）的物理意义是：", options: ["电子被发现几率最大的径向球壳半径", "电子运行轨道的固定半径", "电子到核的平均距离", "电子云的边缘半径"], correct: 0, rationale: "代表径向概率分布函数的极大值位置。" },
-        { q: "求解 2p 态最可几半径时，其驻点 \\(r_m\\) 满足：", options: ["\\(2a\\)", "\\(4a\\)", "\\(a\\)", "\\(0.25a\\)"], correct: 1, rationale: "求导 \\(r^4 e^{-r/a}\\) 得出峰值在 \\(4a\\)。" },
-        { q: "为什么 2p 态的最可几半径比 1s 态大得多？", options: ["主量子数 \\(n\\) 增大导致能量升高", "电子自旋方向改变", "核电荷数减小了", "受其他电子屏蔽"], correct: 0, rationale: "能量越高，波函数向核外延展越远。" },
-        { q: "当 \\(r \\to \\infty\\) 时，所有氢原子定态的径向概率分布都趋于：", options: ["常数", "无穷大", "0", "1"], correct: 2, rationale: "指数衰减项保证了无穷远概率为 0。" },
-        { q: "如何利用维里定理估计总能量 \\(\\bar{E}\\)？", options: ["\\(\\bar{E} = -\\bar{T}\\)", "\\(\\bar{E} = 2\\bar{T}\\)", "\\(\\bar{E} = \\bar{V}\\)", "\\(\\bar{E} = 0\\)"], correct: 0, rationale: "\\(\\bar{E} = \\bar{T} + \\bar{V} = \\bar{T} - 2\\bar{T} = -\\bar{T}\\)。" }
+    // 50 题题目池
+    const allQuestions = [
+        { q: "中心力场中，势能函数 $V(r)$ 的特点是：", options: ["只与坐标 $x, y, z$ 有关", "只与向径 $r$ 的大小有关", "只与极角 $\\theta$ 有关", "与时间 $t$ 显含相关"], correct: 1, rationale: "中心力场是指势能具有球对称性，仅取决于粒子到原点的距离。" },
+        { q: "在球坐标下，拉普拉斯算符可分解为径向算符和角动量算符，其中角向部分正比于：", options: ["$L_z$", "$L^2$", "$L_+$", "$p^2$"], correct: 1, rationale: "动能算符的角向部分与角动量平方算符 $L^2$ 密切相关。" },
+        { q: "中心力场中定态波函数能分离变量的前提是：", options: ["势能具有球对称性", "必须是氢原子", "电子没有自旋", "能量必须为负值"], correct: 0, rationale: "球对称势场允许哈密顿量在球坐标系下分离变量。" },
+        { q: "球谐函数 $Y_{lm}(\\theta,\\phi)$ 是下列哪个算符的本征函数？", options: ["$H$ 和 $L_z$", "$L^2$ 和 $L_z$", "$L^2$ 和 $L_x$", "只有 $L^2$"], correct: 1, rationale: "球谐函数是角动量平方算符和 z 分量算符的共同本征函数。" },
+        { q: "径向波函数 $R_{nl}(r)$ 的形式取决于：", options: ["球谐函数的阶数", "势能 $V(r)$ 的具体形式", "磁量子数 $m$", "电子的自旋方向"], correct: 1, rationale: "虽然角向解是通用的，但径向解必须根据具体的势能（如库仑势）求解。" },
+        { q: "在氢原子中，有效势能包含库仑势和哪一项？", options: ["离心势能", "万有引力能", "强相互作用能", "自旋轨道耦合能"], correct: 0, rationale: "有效势能 = $V(r) + \\frac{l(l+1)\\hbar^2}{2mr^2}$，后项称为离心势。" },
+        { q: "角向方程的解与主量子数 $n$ 有关吗？", options: ["有关", "无关", "仅在激发态有关", "取决于原子的电荷"], correct: 1, rationale: "角向方程只涉及角量子数 $l$ 和磁量子数 $m$。" },
+        { q: "球谐函数在空间转动下具有什么特性？", options: ["能量守恒", "宇称不变或反对称", "绝对不变", "线性增加"], correct: 1, rationale: "球谐函数具有明确的宇称，取决于 $(-1)^l$。" },
+        { q: "如果一个体系具有球对称性，则哈密顿量 $H$ 与角动量 $L$ 满足：", options: ["$H = L$", "$[H, L] = 0$", "$[H, L] = i\\hbar$", "$H + L = 0$"], correct: 1, rationale: "球对称意味着 $H$ 与角动量各分量对易，角动量守恒。" },
+        { q: "氢原子定态波函数的正交归一化是在什么空间进行的？", options: ["全空间 $(r,\\theta,\\phi)$", "仅径向 $r$", "仅角向", "一维 $x$ 轴"], correct: 0, rationale: "归一化必须覆盖电子可能出现的所有三维空间。" },
+        { q: "主量子数 $n$ 的物理意义主要决定了：", options: ["电子的自旋", "电子云的形状", "能量的主要能级", "角动量的方向"], correct: 2, rationale: "$n$ 称为主量子数，主要决定氢原子的能量本征值。" },
+        { q: "对于给定的主量子数 $n$，角量子数 $l$ 的取值范围是：", options: ["0 到 $n$", "1 到 $n$", "0 到 $n-1$", "$-l$ 到 $+l$"], correct: 2, rationale: "根据量子力学推导，$l = 0, 1, 2, ..., n-1$。" },
+        { q: "角量子数 $l$ 决定了角动量的大小，其值为：", options: ["$l\\hbar$", "$\\sqrt{l(l+1)}\\hbar$", "$l^2\\hbar$", "$(2l+1)\\hbar$"], correct: 1, rationale: "这是 $L^2$ 算符的本征值开方后的结果。" },
+        { q: "磁量子数 $m$ 决定了角动量在 z 轴方向的分量，其值为：", options: ["$m\\hbar$", "$\\sqrt{m(m+1)}\\hbar$", "$\\pm l$", "$n-l$"], correct: 0, rationale: "$L_z$ 的本征值为 $m\\hbar$。" },
+        { q: "当 $n=3$ 时，$l$ 允许取值的个数是：", options: ["1", "2", "3", "4"], correct: 2, rationale: "$l$ 可取 0, 1, 2，共 3 个值。" },
+        { q: "当 $l=2$ 时，$m$ 允许取值的个数是：", options: ["2", "3", "4", "5"], correct: 3, rationale: "$m$ 可取 0, ±1, ±2，共 $2l+1 = 5$ 个值。" },
+        { q: "氢原子中，不考虑自旋时，第 $n$ 能级的简并度为：", options: ["$2n+1$", "$n-1$", "$n^2$", "$2n^2$"], correct: 2, rationale: "$\\sum (2l+1)$ 从 $l=0$ 到 $n-1$ 求和的结果为 $n^2$。" },
+        { q: "考虑电子自旋后，氢原子第 $n$ 能级的简并度变为：", options: ["$n^2$", "$2n^2$", "$n^2+1$", "$2n+1$"], correct: 1, rationale: "每个空间态可以容纳自旋向上和向下两个状态。" },
+        { q: "s 态是指角量子数 $l$ 等于几的状态？", options: ["0", "1", "2", "3"], correct: 0, rationale: "光谱学符号：0->s, 1->p, 2->d, 3->f。" },
+        { q: "p 态电子的角动量大小为：", options: ["0", "$\\sqrt{2}\\hbar$", "$\\sqrt{6}\\hbar$", "$2\\hbar$"], correct: 1, rationale: "$l=1$，代入 $\\sqrt{1(1+1)}\\hbar = \\sqrt{2}\\hbar$。" },
+        { q: "径向概率分布函数 $D(r)$ 与径向波函数 $R(r)$ 的关系是：", options: ["$D(r) = |R(r)|^2$", "$D(r) = r|R(r)|^2$", "$D(r) = r^2|R(r)|^2$", "$D(r) = 4\\pi r|R(r)|^2$"], correct: 2, rationale: "包含 $r^2$ 因子是因为球壳体积元的贡献。" },
+        { q: "1s 态电子的最可几半径位于：", options: ["$r = 0$", "$r = a$", "$r = 0.5a$", "$r = 2a$"], correct: 1, rationale: "对 $r^2 e^{-2r/a}$ 求导可知极大值在玻尔半径 $a$ 处。" },
+        { q: "径向波函数 $R_{nl}(r)$ 在径向上的节点数为：", options: ["$n$", "$l$", "$n-l-1$", "$n-1$"], correct: 2, rationale: "节点（不含原点和无穷远）数为 $n-l-1$。" },
+        { q: "对于 2s 态，其径向波函数的节点数为：", options: ["0", "1", "2", "3"], correct: 1, rationale: "$n=2, l=0$，2-0-1 = 1 个节点。" },
+        { q: "在 $r=0$ 处，$l > 0$ 的所有波函数的值为：", options: ["无穷大", "1", "0", "不确定"], correct: 2, rationale: "由于离心势能的排斥，$l>0$ 的电子在核处的概率为 0。" },
+        { q: "径向概率分布函数 $D(r)$ 在 $r$ 趋于无穷远时的极限是：", options: ["1", "0", "常数", "指数增长"], correct: 1, rationale: "束缚态波函数在无穷远处必须衰减到 0。" },
+        { q: "为什么 1s 态电子在核处的概率密度最大，但最可几半径不在核处？", options: ["核处有排斥力", "体积元 $r^2$ 在核处为 0", "测不准原理", "电子在核处不稳定"], correct: 1, rationale: "概率密度是单位体积概率，而最可几半径考虑的是整个球壳的概率。" },
+        { q: "主量子数 $n$ 越大，电子云的最可几半径通常如何变化？", options: ["变小", "不变", "变大", "先变大后变小"], correct: 2, rationale: "能量越高，电子分布越倾向于远离原子核。" },
+        { q: "2p 态电子的最可几半径与其径向节点数的关系是：", options: ["节点越多半径越大", "2p 态没有径向节点", "节点在最可几半径处", "没有关系"], correct: 1, rationale: "$n=2, l=1$，节点数 = 2-1-1 = 0。" },
+        { q: "径向归一化条件 $\\int D(r)dr = 1$ 的积分范围是：", options: ["$-\\infty$ 到 $+\\infty$", "0 到 $a$", "0 到 $+\\infty$", "$-a$ 到 $a$"], correct: 2, rationale: "半径 $r$ 的物理取值范围是从 0 到无穷大。" },
+        { q: "s 态电子云在角度方向上的分布特点是：", options: ["沿 $z$ 轴分布", "沿 $xy$ 平面分布", "球对称", "呈哑铃形"], correct: 2, rationale: "$l=0$ 时，球谐函数为常数，与角度无关。" },
+        { q: "角量子数 $l$ 决定了电子云角向节面的个数，该个数为：", options: ["$n-1$", "$l$", "$m$", "$2l+1$"], correct: 1, rationale: "$l$ 决定了角向部分的复杂程度和节面数。" },
+        { q: "p_z 态（$l=1, m=0$）电子云的形状通常描述为：", options: ["球形", "哑铃形", "四叶草形", "环形"], correct: 1, rationale: "沿 z 轴有两个瓣，形状像哑铃。" },
+        { q: "在讨论角向概率密度 $w(\\theta,\\phi)$ 时，若针对单位立体角定义，其表达式为：", options: ["$|Y_{lm}|^2$", "$|Y_{lm}|^2 \\sin\\theta$", "$|Y_{lm}|^2 r^2$", "$R \\cdot Y$"], correct: 0, rationale: "立体角定义下不含 $\\sin\\theta$ 因子。" },
+        { q: "磁量子数 $m$ 与电子云在哪个坐标方向的分布对称性有关？", options: ["极角 $\\theta$", "方位角 $\\phi$", "半径 $r$", "宇称"], correct: 1, rationale: "$m$ 出现在 $\\exp(im\\phi)$ 中，决定了绕 z 轴的分布。" },
+        { q: "若 $|m| = l$，则电子云倾向于分布在：", options: ["$z$ 轴附近", "$xy$ 平面附近", "全空间均匀", "原点处"], correct: 1, rationale: "此时 $\\sin^l(\\theta)$ 在 $\\theta=\\pi/2$ 处有极大值。" },
+        { q: "d 轨道（$l=2$）对应的角向节面数是：", options: ["1", "2", "3", "4"], correct: 1, rationale: "$l=2$，角向节面数为 2。" },
+        { q: "球谐函数的归一化条件是对什么进行积分？", options: ["半径 $r$", "立体角 $\\Omega$", "角度 $\\theta$", "角度 $\\phi$"], correct: 1, rationale: "$\\int |Y|^2 d\\Omega = 1$。" },
+        { q: "角向分布图反映了原子的什么性质？", options: ["能量", "质量", "空间指向性", "自旋方向"], correct: 2, rationale: "这决定了原子轨道杂化和分子的几何构型。" },
+        { q: "对于 $m \\neq 0$ 的态，其角向波函数通常是复数，物理上常通过什么处理？", options: ["取绝对值", "线性叠加成实函数", "忽略不计", "取对数"], correct: 1, rationale: "如 $p_x, p_y$ 是由 $m=\\pm 1$ 的复波函数叠加成的实波函数。" },
+        { q: "氢原子能级 $E_n$ 表达式中，能量与主量子数 $n$ 的关系是：", options: ["正比于 $n$", "反比于 $n$", "反比于 $n^2$", "正比于 $n^2$"], correct: 2, rationale: "$E_n = -13.6\\text{eV} / n^2$。" },
+        { q: "根据维里定理，氢原子基态平均动能 $T$ 和平均势能 $V$ 的关系是：", options: ["$T = V$", "$T = -V$", "$T = -1/2 V$", "$T = -2 V$"], correct: 2, rationale: "库仑势下，$2\\langle T \\rangle = -\\langle V \\rangle$。" },
+        { q: "氢原子基态的总能量约为：", options: ["0", "13.6 eV", "-13.6 eV", "-27.2 eV"], correct: 2, rationale: "这是氢原子的电离能的负值。" },
+        { q: "在中心力场中，角动量 $L$ 是守恒量，是因为：", options: ["动能不变", "势能具有球对称性", "没有外磁场", "电子质量很小"], correct: 1, rationale: "对称性导致守恒律（诺特定理）。" },
+        { q: "氢原子的能级简并现象是由于：", options: ["库仑势的特殊性", "电子自旋", "泡利不相容原理", "强相互作用"], correct: 0, rationale: "库仑势具有额外的隐藏对称性（龙格-楞次矢量守恒）。" },
+        { q: "当氢原子从 $n=2$ 跃迁到 $n=1$ 时，辐射的光子能量为：", options: ["13.6 eV", "10.2 eV", "3.4 eV", "1.8 eV"], correct: 1, rationale: "$13.6 \\times (1 - 1/4) = 10.2 \\text{eV}$。" },
+        { q: "基态氢原子的轨道角动量 $L$ 等于：", options: ["0", "$\\hbar$", "$\\sqrt{2}\\hbar$", "$2\\hbar$"], correct: 0, rationale: "基态为 1s 态，$l=0$。" },
+        { q: "在类氢离子（电荷 $Z$）中，能量 $E_n$ 正比于：", options: ["$Z$", "$Z^2$", "$1/Z$", "$1/Z^2$"], correct: 1, rationale: "能量公式包含 $Z^2$ 因子。" },
+        { q: "波尔半径 $a$ 的数值大约是：", options: ["0.53 Å", "1.06 Å", "5.3 nm", "0.1 mm"], correct: 0, rationale: "这是量子力学的基本长度常数。" },
+        { q: "下列哪种情况会消除氢原子能级的 $m$ 简并？", options: ["增加主量子数", "施加外磁场", "忽略自旋", "改变原子核质量"], correct: 1, rationale: "磁场会引起塞曼效应，使不同 $m$ 的能级分裂。" }
     ];
 
+    let selectedQuestions = [];
     let currentIdx = 0;
     let correctCount = 0;
-    let wrongCount = 0;
-    let skipCount = 0;
     let answered = false;
+
+    function getRandomQuestions(num) {
+        let shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, num);
+    }
+
+    function initQuiz() {
+        selectedQuestions = getRandomQuestions(10);
+        renderQuestion();
+    }
 
     function renderQuestion() {
         answered = false;
-        const q = quizData[currentIdx];
-        document.getElementById('cur-idx').innerText = currentIdx + 1;
-        document.getElementById('q-text').innerText = q.q;
+        const q = selectedQuestions[currentIdx];
+        document.getElementById('current-count').innerText = currentIdx + 1;
+        
+        // 关键点：使用 innerHTML 插入 LaTeX 源码
+        document.getElementById('q-text').innerHTML = q.q;
+        
         document.getElementById('next-btn').style.display = 'none';
-        document.getElementById('skip-btn').style.display = 'block';
         document.getElementById('rationale-box').style.display = 'none';
         
         const box = document.getElementById('options-box');
         box.innerHTML = '';
+        
+        const labels = ['A', 'B', 'C', 'D'];
         q.options.forEach((opt, i) => {
             const b = document.createElement('button');
             b.className = 'option';
-            b.innerHTML = opt;
+            // 添加 A. B. C. D. 编号并使用 innerHTML
+            b.innerHTML = `<span class="option-label">${labels[i]}.</span>${opt}`;
             b.onclick = () => handleSelect(i, b);
             box.appendChild(b);
         });
-        MathJax.typesetPromise();
+
+        // 触发 MathJax 重新渲染页面中的公式
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
     }
 
     function handleSelect(idx, el) {
         if (answered) return;
         answered = true;
-        const q = quizData[currentIdx];
+        const q = selectedQuestions[currentIdx];
         const options = document.getElementsByClassName('option');
         
         if (idx === q.correct) {
@@ -138,25 +178,22 @@
         } else {
             el.classList.add('wrong');
             options[q.correct].classList.add('correct');
-            wrongCount++;
         }
 
-        document.getElementById('rationale-box').innerHTML = "<b>解析：</b>" + q.rationale;
-        document.getElementById('rationale-box').style.display = 'block';
+        // 关键点：使用 innerHTML 渲染解析内容
+        const rationaleBox = document.getElementById('rationale-box');
+        rationaleBox.innerHTML = "<b>【解析】：</b>" + q.rationale;
+        rationaleBox.style.display = 'block';
         document.getElementById('next-btn').style.display = 'block';
-        document.getElementById('skip-btn').style.display = 'none';
-        MathJax.typesetPromise();
-    }
 
-    function handleSkip() {
-        if (answered) return;
-        skipCount++;
-        nextQuestion();
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
     }
 
     function nextQuestion() {
         currentIdx++;
-        if (currentIdx < quizData.length) {
+        if (currentIdx < 10) {
             renderQuestion();
         } else {
             showResult();
@@ -164,19 +201,15 @@
     }
 
     function showResult() {
-        document.getElementById('quiz-page').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'none';
         document.getElementById('result-page').style.display = 'block';
-        
         document.getElementById('res-score').innerText = correctCount;
         document.getElementById('res-correct').innerText = correctCount;
-        document.getElementById('res-wrong').innerText = wrongCount;
-        document.getElementById('res-skip').innerText = skipCount;
-        
-        const accuracy = Math.round((correctCount / quizData.length) * 100);
-        document.getElementById('res-accuracy').innerText = accuracy + "%";
+        document.getElementById('res-wrong').innerText = 10 - correctCount;
+        document.getElementById('res-acc').innerText = (correctCount * 10) + "%";
     }
 
-    window.onload = renderQuestion;
+    window.onload = initQuiz;
 </script>
 </body>
 </html>
