@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>氢原子角向分布专项测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --success: #22c55e; --danger: #ef4444; --gray: #64748b; --bg: #f8fafc; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 500px; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-top: 20px; }
+        .progress-bar { font-size: 0.9rem; color: var(--gray); margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .question { font-size: 1.15rem; font-weight: 700; line-height: 1.5; margin-bottom: 20px; color: #1e293b; }
+        .option { display: block; width: 100%; padding: 15px; margin-bottom: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; text-align: left; font-size: 1rem; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
+        .option.correct { background: #dcfce7; border-color: var(--success); color: #166534; }
+        .option.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        .rationale { background: #f5f3ff; padding: 15px; border-radius: 10px; font-size: 0.9rem; color: #5b21b6; border-left: 4px solid var(--primary); margin-top: 15px; display: none; }
+        .footer-btns { display: flex; gap: 10px; margin-top: 20px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-skip { background: #e2e8f0; color: #475569; }
+        .btn-next { background: var(--primary); color: white; display: none; }
+        .result-header { text-align: center; color: #0f172a; margin-bottom: 20px; }
+        .score-big { font-size: 3rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-item { background: #f1f5f9; padding: 15px; border-radius: 15px; text-align: center; }
+        .stat-label { font-size: 0.85rem; color: var(--gray); display: block; }
+        .stat-val { font-size: 1.25rem; font-weight: 700; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="quiz-page">
+        <div class="progress-bar">
+            <span>第 <span id="cur-idx">1</span> / 10 题</span>
+            <span style="color:var(--primary); font-weight:bold;">中心力场与角向分布</span>
+        </div>
+        <div class="card">
+            <div id="q-text" class="question">正在初始化势场...</div>
+            <div id="options-box"></div>
+            <div id="rationale-box" class="rationale"></div>
+            <div class="footer-btns">
+                <button id="skip-btn" class="btn-skip" onclick="handleSkip()">跳过</button>
+                <button id="next-btn" class="btn-next" onclick="nextQuestion()">下一题</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-page" style="display: none;">
+        <div class="card">
+            <div class="result-header">
+                <h2 style="margin:0">完成了！</h2>
+                <p style="color:var(--gray)">氢原子角向分布专项练习得分：</p>
+                <div class="score-big"><span id="res-score">0</span>/10</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">准确率</span><div class="stat-val" id="res-accuracy">0%</div></div>
+                <div class="stat-item"><span class="stat-label">正确</span><div class="stat-val" style="color:var(--success)" id="res-correct">0</div></div>
+                <div class="stat-item"><span class="stat-label">错误</span><div class="stat-val" style="color:var(--danger)" id="res-wrong">0</div></div>
+                <div class="stat-item"><span class="stat-label">跳过</span><div class="stat-val" style="color:var(--gray)" id="res-skip">0</div></div>
+            </div>
+            <button onclick="location.reload()" style="background:var(--primary); color:white; width:100%; margin-top:25px;">再测一次</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { q: "在中心力场中，粒子的波函数可以进行变量分离，其中的角向部分由什么函数描述？", options: ["拉盖尔多项式", "球谐函数 \\(Y_{lm}(\\theta, \\phi)\\)", "厄米多项式", "贝塞尔函数"], correct: 1, rationale: "中心力场的角向部分解始终是球谐函数，这由体系的转动对称性决定。" },
+        { q: "对于 s 态 (\\(l=0\\))，其角向波函数 \\(Y_{00}\\) 的形状是：", options: ["双哑铃形", "球对称", "沿 z 轴拉伸的椭球", "四叶草形"], correct: 1, rationale: "\\(l=0\\) 时，角向波函数不随角度变化，概率分布在空间呈球对称。" },
+        { q: "角向概率密度函数 \\(w(\\theta, \\phi)\\) 的定义是：", options: ["\\(|Y_{lm}|^2\\)", "\\(\\sin\\theta |Y_{lm}|^2\\)", "\\(r^2 |Y_{lm}|^2\\)", "\\(|Y_{lm}|^2 / \\sin\\theta\\)"], correct: 0, rationale: "角向概率密度直接定义为角向波函数模的平方。" },
+        { q: "对于 p 态 (\\(l=1\\))，当磁量子数 \\(m=0\\) 时，电子云的主要分布方向是：", options: ["xy 平面内", "沿 x 轴", "沿 y 轴", "沿 z 轴"], correct: 3, rationale: "\\(Y_{10} \\propto \\cos\\theta\\)，其极值在 \\(\\theta=0, \\pi\\) 处，即沿 z 轴分布。" },
+        { q: "在 \\(l=1, m=\\pm 1\\) 的状态下，电子在 z 轴方向（\\(\\theta=0\\)）被发现的概率为：", options: ["最大值", "最小值（0）", "1/2", "取决于主量子数"], correct: 1, rationale: "\\(Y_{1,\\pm 1} \\propto \\sin\\theta\\)，当 \\(\\theta=0\\) 时 \\(\\sin\\theta=0\\)，因此 z 轴是其节线。" },
+        { q: "角动量平方算符 \\(\\hat{L}^2\\) 的本征值与哪个量子数直接相关？", options: ["主量子数 \\(n\\)", "角量子数 \\(l\\)", "磁量子数 \\(m\\)", "自旋量子数 \\(s\\)"], correct: 1, rationale: "本征值为 \\(l(l+1)\\hbar^2\\)。" },
+        { q: "角向概率分布图中的“节面”是指概率为何值的区域？", options: ["1", "最大值", "0", "平均值"], correct: 2, rationale: "节面（Nodal Surface）是指波函数穿过零点，概率密度为零的平面或曲面。" },
+        { q: "对于给定的 \\(l\\)，磁量子数 \\(m\\) 可以取多少个不同的值？", options: ["\\(l\\)", "\\(2l\\)", "\\(2l+1\\)", "\\(n^2\\)"], correct: 2, rationale: "\\(m\\) 的取值为 \\(0, \\pm 1, \\dots, \\pm l\\)，共 \\(2l+1\\) 个。" },
+        { q: "在中心力场中，能量本征值 E 通常与磁量子数 \\(m\\) 无关，这种现象称为：", options: ["能级简并", "塞曼效应", "宇称守恒", "精细结构"], correct: 0, rationale: "由于空间转动对称性，不同 \\(m\\) 态具有相同的能量。" },
+        { q: "通过角向分布图，我们可以直观地理解原子的什么特性？", options: ["能量等级", "原子半径", "波粒二象性", "空间指向性（化学键方向）"], correct: 3, rationale: "电子云的角向分布直接决定了原子轨道在空间的指向，从而解释了化学键的角度。" }
+    ];
+
+    let currentIdx = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let skipCount = 0;
+    let answered = false;
+
+    function renderQuestion() {
+        answered = false;
+        const q = quizData[currentIdx];
+        document.getElementById('cur-idx').innerText = currentIdx + 1;
+        document.getElementById('q-text').innerText = q.q;
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('skip-btn').style.display = 'block';
+        document.getElementById('rationale-box').style.display = 'none';
+        const box = document.getElementById('options-box');
+        box.innerHTML = '';
+        q.options.forEach((opt, i) => {
+            const b = document.createElement('button');
+            b.className = 'option';
+            b.innerHTML = opt;
+            b.onclick = () => handleSelect(i, b);
+            box.appendChild(b);
+        });
+        MathJax.typesetPromise();
+    }
+
+    function handleSelect(idx, el) {
+        if (answered) return;
+        answered = true;
+        const q = quizData[currentIdx];
+        const options = document.getElementsByClassName('option');
+        if (idx === q.correct) {
+            el.classList.add('correct');
+            correctCount++;
+        } else {
+            el.classList.add('wrong');
+            options[q.correct].classList.add('correct');
+            wrongCount++;
+        }
+        document.getElementById('rationale-box').innerHTML = "<b>解析：</b>" + q.rationale;
+        document.getElementById('rationale-box').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'block';
+        document.getElementById('skip-btn').style.display = 'none';
+        MathJax.typesetPromise();
+    }
+
+    function handleSkip() {
+        if (answered) return;
+        skipCount++;
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < quizData.length) renderQuestion();
+        else showResult();
+    }
+
+    function showResult() {
+        document.getElementById('quiz-page').style.display = 'none';
+        document.getElementById('result-page').style.display = 'block';
+        document.getElementById('res-score').innerText = correctCount;
+        document.getElementById('res-correct').innerText = correctCount;
+        document.getElementById('res-wrong').innerText = wrongCount;
+        document.getElementById('res-skip').innerText = skipCount;
+        const accuracy = Math.round((correctCount / quizData.length) * 100);
+        document.getElementById('res-accuracy').innerText = accuracy + "%";
+    }
+
+    window.onload = renderQuestion;
+</script>
+</body>
+</html>
