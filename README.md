@@ -3,13 +3,12 @@
 # ⚛️ 量子力学交互演示库
 **Interactive Visualization for Quantum Mechanics @ NUAA**
 
-[![GitHub stars](https://img.shields.io/github/stars/wenlong-you/QuantumMechanics?style=social)](https://github.com/wenlong-you/QuantumMechanics)
-[![School](https://img.shields.io/badge/NUAA-物理学院-blue.svg)](http://physics.nuaa.edu.cn/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/wenlong-you/QuantumMechanics?style=social)](https://github.com/wenlong-you/QuantumMechanics) [![School](https://img.shields.io/badge/NUAA-物理学院-blue.svg)](http://physics.nuaa.edu.cn/) [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-物理学院《量子力学》课程辅助教学工具库。  
+物理学院《量子力学》课程辅助教学工具库。
 点击下方链接，即可在浏览器中直接运行演示。
----  
+
+---
 
 ## 🎮 快速访问 (Live Demos)
 
@@ -24,18 +23,18 @@
 
 ## 📝 专项练习 (Practice)
 
-**[🎯 中心力场与角向分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Angular_Test.html)**  
+**[🎯 中心力场与角向分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Angular_Test.html)**
 *掌握球谐函数与 $m$ 的物理意义*
 
-**[🧪 波函数与径向分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Radial_Test.html)**  
+**[🧪 波函数与径向分布专项练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Radial_Test.html)**
 *掌握节点数、最可几半径与能量本征值*
 
-**[📑 中心力场综合练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Test.html)**  
+**[📑 中心力场综合练习](https://wenlong-you.github.io/QuantumMechanics/H_Atom_Test.html)**
 *考前冲刺与简并度深度分析*
 
--------
+---
 
-**感谢支持！点击上方按钮点亮 ⭐**  
+**感谢支持！点击上方按钮点亮 ⭐**
 © 2026 NUAA 物理学院 · [Wenlong You](https://github.com/wenlong-you)
 
 </div>
