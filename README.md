@@ -17,7 +17,7 @@
 
 ### 🎮 快速访问 (Live Demos)
 
-| 基础模型 | 原子物理 | 教学辅助 |
+| 一维模型 |中心力场 | 教学辅助 |
 | :--- | :--- | :--- |
 | 🪜 [一维无穷深势阱](https://wenlong-you.github.io/QuantumMechanics/1DInfinitewell.html) | 📏 [氢原子径向分布](https://wenlong-you.github.io/QuantumMechanics/H_Atom_RadialWF.html) | 🎲 [课堂随机点名](https://wenlong-you.github.io/QuantumMechanics/dianming.html) |
 | 🕳️ [一维有限深势阱](https://wenlong-you.github.io/QuantumMechanics/1Dfinitewell.html) | 🌐 [氢原子角向密度](https://wenlong-you.github.io/QuantumMechanics/H_Atom_SphericalHarmonics.html) | |
